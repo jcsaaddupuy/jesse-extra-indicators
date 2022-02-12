@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "jesse-extra-indicators"
+version = "0.1.0"
+description = ""
+authors = ["jcsaaddupuy <jc.saaddupuy@fsfe.org>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+numpy = "^1.22.2"
+scipy = "^1.8.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
