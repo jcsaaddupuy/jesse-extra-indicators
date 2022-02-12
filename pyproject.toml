@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "jesse-extra-indicators"
 version = "0.1.0"
-description = ""
+description = "Extra indicators for jesse ai."
 authors = ["jcsaaddupuy <jc.saaddupuy@fsfe.org>"]
 
 [tool.poetry.dependencies]
