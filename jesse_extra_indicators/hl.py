@@ -1,5 +1,6 @@
 # implementation based on
 # https://medium.com/raposa-technologies/higher-highs-lower-lows-and-calculating-price-trends-in-python-9bc9703f46a1
+import typing as t
 import numpy as np
 from scipy.signal import argrelextrema
 from collections import deque
@@ -11,12 +12,16 @@ except ImportError:
 
 
 @jit
-def higher_lows(data: np.array, order: int = 5, K: int = 2):
-    """
-    Finds consecutive higher lows in price pattern.
-    Must not be exceeded within the number of periods indicated by the width
-    parameter for the value to be confirmed.
-    K determines how many consecutive lows need to be higher.
+def higher_lows(data: np.array, order: int = 5, K: int = 2) -> t.List[deque]:
+    """Finds consecutive higher lows in time series like list of values.
+
+    Args:
+        data (np.array): np.array of data points values.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive lows need to be higher. Defaults to 2.
+
+    Returns:
+        t.List[deque]: List of deque containing lower lows indexes.
     """
     # Get lows
     low_idx = argrelextrema(data, np.less, order=order)[0]
@@ -38,12 +43,16 @@ def higher_lows(data: np.array, order: int = 5, K: int = 2):
 
 
 @jit
-def lower_highs(data: np.array, order: int = 5, K: int = 2):
-    """
-    Finds consecutive lower highs in price pattern.
-    Must not be exceeded within the number of periods indicated by the width
-    parameter for the value to be confirmed.
-    K determines how many consecutive highs need to be lower.
+def lower_highs(data: np.array, order: int = 5, K: int = 2) -> t.List[deque]:
+    """Finds consecutive lower highs in time series like list of values.
+
+    Args:
+        data (np.array): np.array of data points values.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive highs need to be lower. Defaults to 2.
+
+    Returns:
+        t.List[deque]: List of deque containing lower lows indexes.
     """
     # Get highs
     high_idx = argrelextrema(data, np.greater, order=order)[0]
@@ -66,12 +75,16 @@ def lower_highs(data: np.array, order: int = 5, K: int = 2):
 
 
 @jit
-def higher_highs(data: np.array, order: int = 5, K: int = 2):
-    """
-    Finds consecutive higher highs in price pattern.
-    Must not be exceeded within the number of periods indicated by the width
-    parameter for the value to be confirmed.
-    K determines how many consecutive highs need to be higher.
+def higher_highs(data: np.array, order: int = 5, K: int = 2) -> t.List[deque]:
+    """Finds consecutive higher highs in time series like list of values.
+
+    Args:
+        data (np.array): np.array of data points values.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive highs need to be higher. Defaults to 2.
+
+    Returns:
+        t.List[deque]: List of deque containing lower lows indexes.
     """
     # Get highs
     high_idx = argrelextrema(data, np.greater, order=order)[0]
@@ -93,12 +106,16 @@ def higher_highs(data: np.array, order: int = 5, K: int = 2):
 
 
 @jit
-def lower_lows(data: np.array, order: int = 5, K: int = 2):
-    """
-    Finds consecutive lower lows in price pattern.
-    Must not be exceeded within the number of periods indicated by the width
-    parameter for the value to be confirmed.
-    K determines how many consecutive lows need to be lower.
+def lower_lows(data: np.array, order: int = 5, K: int = 2) -> t.List[deque]:
+    """Finds consecutive lower lows in time series like list of values.
+
+    Args:
+        data (np.array): np.array of data points values.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive low need to be lower. Defaults to 2.
+
+    Returns:
+        t.List[deque]: List of deque containing lower lows indexes.
     """
     # Get lows
     low_idx = argrelextrema(data, np.less, order=order)[0]
@@ -127,18 +144,16 @@ RawHighsLows = namedtuple(
 
 
 def highs_lows(data: np.array, order: int = 5, K: int = 2) -> RawHighsLows:
-    """
-    hl = highs_lows(self.candles[:, 2])
-    rsi_hl = highs_lows(ta.rsi(self.candles))
-    window = 2
-    # bullish divergence
-    regular_divergence = hl.lower_lows[-window:].any() and rsi_hl.higher_lows[-window:].any()
-    hidden_divergence = hl.higher_lows[-window:].any() and rsi_hl.lower_lows[-window:].any()
-    # bearish divergence
-    regular_divergence = hl.higher_highs[-window:].any() and rsi_hl.lower_highs[-window:].any()
-    hidden_divergence = hl.lower_highs[-window:].any() and rsi_hl.higher_highs[-window:].any()
-    """
+    """Finds consecutive higher highs / higher lows / lower highs / lower lows in time series like list of values.
 
+    Args:
+        data (np.array): np.array of data points values.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive highs need to be higher. Defaults to 2.
+
+    Returns:
+        RawHighsLows: Named tuple containing hh/hl/ll/lh indexes in higher_highs, lower_highs, higher_lows, lower_lows attributes.
+    """
     hh = higher_highs(data, order=order, K=K)
     hh_sig = np.zeros(len(data), dtype=int)
     for s in hh:
@@ -164,25 +179,72 @@ def highs_lows(data: np.array, order: int = 5, K: int = 2) -> RawHighsLows:
 
 class HighLow:
     def __init__(self, data: np.array, order=5, K=2):
+        """Initialize a new HighLow object.
+
+        Args:
+            data (np.array): np.array of data points values.
+            order (int, optional): argrelextrema order. Defaults to 5.
+            K (int, optional): How many consecutive highs need to be higher. Defaults to 2.
+        """
         self.hl = highs_lows(data, order, K)
 
     @jit
     def has_lower_lows(self, window: int) -> bool:
+        """Detect lower lows.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has lower lows in the given window, False otherwise.
+        """
         return self.hl.lower_lows[-window:].any()
 
     @jit
     def has_lower_highs(self, window: int) -> bool:
+        """Detect lower highs.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has lower highs in the given window, False otherwise.
+        """
         return self.hl.lower_highs[-window:].any()
 
     @jit
     def has_higher_lows(self, window: int) -> bool:
+        """Detect higher lows.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has higher lows in the given window, False otherwise.
+        """
         return self.hl.higher_lows[-window:].any()
 
     @jit
     def has_higher_highs(self, window: int) -> bool:
+        """Detect higher highs.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has higher highs in the given window, False otherwise.
+        """
         return self.hl.higher_highs[-window:].any()
 
     def strict_has_lower_lows(self, window: int) -> bool:
+        """Detect lower lows in strict mode.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has *only* lower lows in the given window, False otherwise.
+        """
         return self.has_lower_lows(window) and not (
             self.has_lower_highs(window)
             or self.has_higher_lows(window)
@@ -190,6 +252,14 @@ class HighLow:
         )
 
     def strict_has_lower_highs(self, window: int) -> bool:
+        """Detect lower highs in strict mode.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has *only* lower highs in the given window, False otherwise.
+        """
         return self.has_lower_highs(window) and not (
             self.has_lower_lows(window)
             or self.has_higher_lows(window)
@@ -197,6 +267,14 @@ class HighLow:
         )
 
     def strict_has_higher_lows(self, window: int) -> bool:
+        """Detect higher lows in strict mode.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has *only* higher lows in the given window, False otherwise.
+        """
         return self.has_higher_lows(window) and not (
             self.has_lower_lows(window)
             or self.has_lower_highs(window)
@@ -204,6 +282,14 @@ class HighLow:
         )
 
     def strict_has_higher_highs(self, window: int) -> bool:
+        """Detect higher highs in strict mode.
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            bool: True if data has *only* higher highs in the given window, False otherwise.
+        """
         return self.has_higher_highs(window) and not (
             self.has_lower_lows(window)
             or self.has_lower_highs(window)
@@ -213,10 +299,25 @@ class HighLow:
 
 class IndicatorDivergence:
     def __init__(self, hld1: HighLow, hld2: HighLow):
+        """Initialize a new IndicatorDivergence. This objects helps to find divergences or confirmation between two indicators.
+
+        Args:
+            hld1 (HighLow): indicator 1 HighLow object
+            hld2 (HighLow): indicator 2 HighLow object
+        """
         self.hld1 = hld1
         self.hld2 = hld2
 
     def bullish_regular_divergence(self, window: int, strict: bool = True) -> bool:
+        """Detect bullish regular divergence.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Returns:
+            bool: True if indicator 1 has lower low and indicator 2 has higher lows, False otherwise.
+        """
         if strict:
             return self.hld1.strict_has_lower_lows(
                 window
@@ -224,6 +325,15 @@ class IndicatorDivergence:
         return self.hld1.has_lower_lows(window) and self.hld2.has_higher_lows(window)
 
     def bearish_regular_divergence(self, window: int, strict: bool = True) -> bool:
+        """Detect bearish regular divergence.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Returns:
+            bool: True if indicator 1 has higher highs and indicator 2 has lower highs, False otherwise.
+        """
         if strict:
             return self.hld1.strict_has_higher_highs(
                 window
@@ -231,6 +341,15 @@ class IndicatorDivergence:
         return self.hld1.has_higher_highs(window) and self.hld2.has_lower_highs(window)
 
     def bullish_hidden_divergence(self, window: int, strict: bool = True) -> bool:
+        """Detect bullish hidden divergence.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Returns:
+            bool: True if indicator 1 has higher lows and indicator 2 has lower lows, False otherwise.
+        """
         if strict:
             return self.hld1.strict_has_higher_lows(
                 window
@@ -238,6 +357,15 @@ class IndicatorDivergence:
         return self.hld1.has_higher_lows(window) and self.hld2.has_lower_lows(window)
 
     def bearish_hidden_divergence(self, window: int, strict: bool = True) -> bool:
+        """Detect bearish hidden divergence.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Returns:
+            bool: True if indicator 1 has lower highs and indicator 2 has higher highs, False otherwise.
+        """
         if strict:
             return self.hld1.strict_has_lower_highs(
                 window
@@ -245,6 +373,19 @@ class IndicatorDivergence:
         return self.hld1.has_lower_highs(window) and self.hld2.has_higher_highs(window)
 
     def regular_divergence(self, window: int, mode, strict: bool = True) -> bool:
+        """Detect a regular divergence.
+
+        Args:
+            window (int): Loopback window.
+            mode ([type]): "bullish"/"bearish"
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Raises:
+            ValueError: An unknown value have been given to the parameter mode.
+
+        Returns:
+            bool: True if a regular divergence have been detected, False otherwise.
+        """
         if mode == "bullish":
             return self.bullish_regular_divergence(window, strict)
         if mode == "bearish":
@@ -252,25 +393,80 @@ class IndicatorDivergence:
         raise ValueError(f"Unknown mode '{mode}'")
 
     def hidden_divergence(self, window: int, mode, strict: bool = True) -> bool:
+        """Detect a hidden divergence.
+
+        Args:
+            window (int): Loopback window.
+            mode ([type]): "bullish"/"bearish"
+            strict (bool, optional): If True, will use the strict version on higher highs/lower low methods. Defaults to True.
+
+        Raises:
+            ValueError: An unknown value have been given to the parameter mode.
+
+        Returns:
+            bool: True if a hidden divergence have been detected, False otherwise.
+        """
         if mode == "bullish":
             return self.bullish_hidden_divergence(window, strict)
         if mode == "bearish":
             return self.bearish_hidden_divergence(window, strict)
         raise ValueError(f"Unknown mode '{mode}'")
 
-    def higher_highs_confirmation(self, window: int):
+    def higher_highs_confirmation(self, window: int) -> True:
+        """Detect higher highs confirmations (both indicators agree).
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            True: True if a higher highs confirmation have been detected, False otherwise.
+        """
         return self.hld1.has_higher_highs(window) and self.hld2.has_higher_highs(window)
 
-    def higher_lows_confirmation(self, window: int):
+    def higher_lows_confirmation(self, window: int) -> bool:
+        """Detect higher lows confirmations (both indicators agree).
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            True: True if a higher lows confirmation have been detected, False otherwise.
+        """
         return self.hld1.has_higher_lows(window) and self.hld2.has_higher_lows(window)
 
-    def lower_highs_confirmation(self, window: int):
+    def lower_highs_confirmation(self, window: int) -> bool:
+        """Detect lower highs confirmations (both indicators agree).
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            True: True if a lower highs confirmation have been detected, False otherwise.
+        """
         return self.hld1.has_lower_highs(window) and self.hld2.has_lower_highs(window)
 
     def lower_lows_confirmation(self, window: int):
+        """Detect lower lows confirmations (both indicators agree).
+
+        Args:
+            window (int): Loopback window.
+
+        Returns:
+            True: True if a lower lows confirmation have been detected, False otherwise.
+        """
         return self.hld1.has_lower_lows(window) and self.hld2.has_lower_lows(window)
 
     def bullish_confirmation(self, window: int, strict: bool = True) -> bool:
+        """Detect a bullish confirmation.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will check that indicators have both higher highs and higher lows confirmation.
+            If False, this function will check only one of these conditions.
+
+        Returns:
+            bool: True if bullish confirmation have been detected.
+        """
         if strict:
             return self.higher_highs_confirmation(
                 window
@@ -280,6 +476,16 @@ class IndicatorDivergence:
         )
 
     def bearish_confirmation(self, window: int, strict: bool = True) -> bool:
+        """Detect a bearish confirmation.
+
+        Args:
+            window (int): Loopback window.
+            strict (bool, optional): If True, will check that indicators have both lower highs and lower lows confirmation.
+            If False, this function will check only one of these conditions.
+
+        Returns:
+            bool: True if bullish confirmation have been detected.
+        """
         if strict:
             return self.lower_highs_confirmation(
                 window
@@ -290,6 +496,19 @@ class IndicatorDivergence:
             ) or self.lower_lows_confirmation(window)
 
     def confirmation(self, window: int, mode, strict: bool = True) -> bool:
+        """Detect indicators confirmation.
+
+        Args:
+            window (int): Loopback window.
+            mode ([type]): "bullish"/"bearish"
+            strict (bool, optional): If True, will detect in strict mode.
+
+        Raises:
+            ValueError: An unknown value have been given to the parameter mode.
+
+        Returns:
+            bool: True if a bullish/bearish confirmation have been detected, False otherwise.
+        """
         if mode == "bullish":
             return self.bullish_confirmation(window, strict)
         if mode == "bearish":
@@ -300,6 +519,17 @@ class IndicatorDivergence:
 def indicators_divergence(
     data1: np.array, data2: np.array, order: int = 5, K: int = 2
 ) -> IndicatorDivergence:
+    """Helper method to instanciate IndicatorDivergence from raw numpy arrays.
+
+    Args:
+        data1 (np.array): Data for indicator 1.
+        data2 (np.array): Data for indicator 2.
+        order (int, optional): argrelextrema order. Defaults to 5.
+        K (int, optional): How many consecutive highs need to be higher. Defaults to 2.
+
+    Returns:
+        IndicatorDivergence: Indicator Divergence object.
+    """
     return IndicatorDivergence(
         HighLow(data1, order, K),
         HighLow(data2, order, K),
