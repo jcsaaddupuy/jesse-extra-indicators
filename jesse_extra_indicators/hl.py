@@ -126,7 +126,7 @@ RawHighsLows = namedtuple(
 )
 
 
-def highs_lows(data: np.array, order: int = 5, K: int = 2):
+def highs_lows(data: np.array, order: int = 5, K: int = 2) -> RawHighsLows:
     """
     hl = highs_lows(self.candles[:, 2])
     rsi_hl = highs_lows(ta.rsi(self.candles))
@@ -163,8 +163,8 @@ def highs_lows(data: np.array, order: int = 5, K: int = 2):
 
 
 class HighLow:
-    def __init__(self, hl: RawHighsLows):
-        self.hl = hl
+    def __init__(self, data: np.array, order=5, K=2):
+        self.hl = highs_lows(data, order, K)
 
     @jit
     def has_lower_lows(self, window: int) -> bool:
@@ -209,10 +209,6 @@ class HighLow:
             or self.has_lower_highs(window)
             or self.has_higher_lows(window)
         )
-
-
-def highs_lows_divergence(data, order: int = 5, K: int = 2) -> HighLow:
-    return HighLow(highs_lows(data, order, K))
 
 
 class IndicatorDivergence:
@@ -305,6 +301,6 @@ def indicators_divergence(
     data1: np.array, data2: np.array, order: int = 5, K: int = 2
 ) -> IndicatorDivergence:
     return IndicatorDivergence(
-        HighLow(highs_lows(data1, order, K)),
-        HighLow(highs_lows(data2, order, K)),
+        HighLow(data1, order, K),
+        HighLow(data2, order, K),
     )
