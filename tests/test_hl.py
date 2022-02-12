@@ -220,7 +220,7 @@ def test_IndicatorDivergence_bearish_regular_divergence():
 
     # build indicator divergence object
     ind_div = xta.hl.IndicatorDivergence(ind1_hl, ind2_hl)
-    # check bearish regulat divergence is detected
+    # check bearish regular divergence is detected
     assert ind_div.bearish_regular_divergence(w)
     assert ind_div.bearish_regular_divergence(w, strict=False)
 
@@ -243,7 +243,7 @@ def test_IndicatorDivergence_bullish_hidden_divergence():
 
     # build indicator divergence object
     ind_div = xta.hl.IndicatorDivergence(ind1_hl, ind2_hl)
-    # check bearish regulat divergence is detected
+    # check bearish regular divergence is detected
     assert ind_div.bullish_hidden_divergence(w)
     assert ind_div.bullish_hidden_divergence(w, strict=False)
     # also check top level method
@@ -265,7 +265,7 @@ def test_IndicatorDivergence_bearish_hidden_divergence():
 
     # build indicator divergence object
     ind_div = xta.hl.IndicatorDivergence(ind1_hl, ind2_hl)
-    # check bearish regulat divergence is detected
+    # check bearish regular divergence is detected
     assert ind_div.bearish_hidden_divergence(w)
     assert ind_div.bearish_hidden_divergence(w, strict=False)
 
